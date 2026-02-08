@@ -217,7 +217,7 @@ email,first_name,last_name,company_name,city,website,type,phone
 
 9. **Calendly-Link erstellen** – Wird in der Breakup-Mail (Mail 4) verwendet. Variable `{{calendly_link}}`. Muss noch eingerichtet werden.
 
-10. **Absender-Infos festlegen** – `{{absender_vorname}}` und `{{absender_nachname}}` – vermutlich "Christian Loch" aber bestätigen.
+10. **Absender-Infos festlegen** – `{{absender_vorname}}` und `{{absender_nachname}}` – vermutlich "Carsten Loch" aber bestätigen.
 
 11. **Landingpage prüfen** – https://www.essen-auf-raedern.eu/ – Sicherstellen dass sie für Leads optimiert ist die über Cold-E-Mail kommen.
 

@@ -189,7 +189,7 @@ So oder so – vielen Dank für Ihre wichtige Arbeit und eine gute Woche!
 | `{{vorname}}` | Thomas | Lead-Daten |
 | `{{firmenname}}` | DRK Kreisverband München | Lead-Daten |
 | `{{stadt}}` | München | Lead-Daten |
-| `{{absender_vorname}}` | Christian | Account-Einstellung |
+| `{{absender_vorname}}` | Carsten | Account-Einstellung |
 | `{{absender_nachname}}` | Loch | Account-Einstellung |
 | `{{calendly_link}}` | calendly.com/ear/demo | Erstellen |
 

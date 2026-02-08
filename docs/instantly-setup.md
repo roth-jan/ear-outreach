@@ -18,13 +18,13 @@ Password:     [Passwort]
 ### Sender-Informationen
 | Account | Sender Name | Sender Email |
 |---------|-------------|--------------|
-| 1 | Christian Loch | c.loch@ear-software.de |
+| 1 | Carsten Loch | c.loch@ear-software.de |
 | 2 | EAR Software | info@ear-software.de |
-| 3 | Christian Loch | c.loch@mahlzeitendienst-software.de |
+| 3 | Carsten Loch | c.loch@mahlzeitendienst-software.de |
 | 4 | EAR Team | kontakt@mahlzeitendienst-software.de |
 | ... | ... | ... |
 
-**Tipp:** "Christian Loch" als Absendername – persönliche Namen haben bessere Open Rates als Firmennamen.
+**Tipp:** "Carsten Loch" als Absendername – persönliche Namen haben bessere Open Rates als Firmennamen.
 
 ---
 

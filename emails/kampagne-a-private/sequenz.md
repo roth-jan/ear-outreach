@@ -179,7 +179,7 @@ So oder so – ich wünsche Ihnen eine gute Woche!
 | `{{vorname}}` | Thomas | Lead-Daten |
 | `{{firmenname}}` | Müller Mahlzeitendienst | Lead-Daten |
 | `{{stadt}}` | München | Lead-Daten |
-| `{{absender_vorname}}` | Christian | Account-Einstellung |
+| `{{absender_vorname}}` | Carsten | Account-Einstellung |
 | `{{absender_nachname}}` | Loch | Account-Einstellung |
 | `{{calendly_link}}` | calendly.com/ear/demo | Erstellen |
 

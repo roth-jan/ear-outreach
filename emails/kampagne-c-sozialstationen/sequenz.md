@@ -188,7 +188,7 @@ So oder so – ich wünsche Ihnen und Ihrem Team eine gute Woche!
 | `{{vorname}}` | Sabine | Lead-Daten |
 | `{{firmenname}}` | Sozialstation Musterstadt | Lead-Daten |
 | `{{stadt}}` | Musterstadt | Lead-Daten |
-| `{{absender_vorname}}` | Christian | Account-Einstellung |
+| `{{absender_vorname}}` | Carsten | Account-Einstellung |
 | `{{absender_nachname}}` | Loch | Account-Einstellung |
 | `{{calendly_link}}` | calendly.com/ear/demo | Erstellen |
 
