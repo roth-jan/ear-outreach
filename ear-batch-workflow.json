@@ -1,0 +1,319 @@
+{
+  "name": "EAR Batch-Nachschub",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "id": "ear-trigger-01",
+      "name": "Alle 12 Stunden",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-320, 0]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "EAR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EAR Mahlzeitendienste Outreach",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/EAR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 0,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/EAR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Verarbeitet",
+              "lookupValue": ""
+            }
+          ]
+        },
+        "options": {
+          "returnAll": false,
+          "limit": 3
+        }
+      },
+      "id": "ear-sheets-read-02",
+      "name": "Leads lesen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-128, 0],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "scFh2GbrfDnOQ3le",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "curlImport": "",
+        "method": "GET",
+        "url": "={{ $json.Website }}",
+        "authentication": "none",
+        "provideSslCertificates": false,
+        "sendQuery": false,
+        "sendHeaders": false,
+        "sendBody": false,
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "neverError": false,
+              "responseFormat": "autodetect"
+            }
+          }
+        },
+        "infoMessage": ""
+      },
+      "id": "ear-http-03",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [48, 0],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "responses": {
+          "values": [
+            {
+              "type": "text",
+              "role": "user",
+              "content": "=Du analysierst Websites von Sozialstationen, Wohlfahrtsverbänden und Mahlzeitendiensten und schreibst EINEN kurzen, natürlichen Satz der zeigt, dass du die Organisation wirklich angeschaut hast. Der Satz wird in einer geschäftlichen E-Mail verwendet.\n\nPRODUKT-KONTEXT:\nEAR Software - Komplettlösung für Mahlzeitendienste/Essen-auf-Rädern:\n- Tourenplanung mit Google Maps Integration\n- Automatische Packlisten & Etikettendruck\n- Kundenverwaltung für Mahlzeitenempfänger\n\nORGANISATIONS-DATEN:\nFirmenname: {{ $('Leads lesen').item.json.Firmenname }}\nOrt: {{ $('Leads lesen').item.json.Ort }}\n\nWEBSITE-INHALT:\n{{ $json.data ? $json.data.replace(/<script[\\\\s\\\\S]*?<\\/script>/gi, '').replace(/<style[\\\\s\\\\S]*?<\\/style>/gi, '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/g, '&').replace(/\\\\s+/g, ' ').trim().slice(0, 4000) : 'Kein Website-Inhalt verfügbar' }}\n\nWONACH DU SUCHST:\n- Hinweise auf Essen-auf-Rädern oder Mahlzeitendienste\n- Tourenplanung, Liefergebiete, Menüpläne\n- Soziale Dienste, ambulante Pflege, Seniorenbetreuung\n- Kooperationen mit Kommunen, Kirchen oder anderen Trägern\n- Ehrenamtliche Fahrer, Auslieferungslogistik\n\nAUFGABE:\nSchreibe GENAU EINEN Satz (max. 20 Wörter), der sich auf etwas Konkretes von der Website bezieht. Schreib so, wie ein normaler Mensch schreiben würde - nicht wie eine KI oder ein Verkäufer.\n\nSO KLINGT GUT (natürlich, konkret):\n- \"Ich habe gesehen, dass Sie in der Region Hannover täglich über 200 Mahlzeiten ausliefern.\"\n- \"Euer Menüplan mit der Auswahl zwischen drei Gerichten ist mir auf der Website aufgefallen.\"\n- \"Die Zusammenarbeit mit dem DRK Kreisverband bei der Seniorenverpflegung finde ich stark.\"\n\nSO KLINGT SCHLECHT (KI-Spam, bitte NIEMALS so):\n- \"Ihr beeindruckendes Engagement hat meine Aufmerksamkeit geweckt.\" (typischer KI-Müll)\n- \"Ich bin begeistert von Ihrem innovativen Ansatz...\" (Schleimer-Sprache)\n- \"Als führender Anbieter in der Region...\" (leere Floskel)\n- Alles mit \"beeindruckend\", \"innovativ\", \"herausragend\", \"bemerkenswert\"\n\nREGELN:\n- NUR den einen Satz ausgeben, NICHTS anderes\n- Kein \"Hallo\", keine Anrede, keine Signatur\n- Nenne etwas KONKRETES: einen Ortsnamen, ein Angebot, einen Partner, eine Zahl, ein Detail\n- Klingt wie von einem echten Menschen geschrieben, nicht wie ChatGPT\n- VERBOTEN: \"beeindruckt\", \"Aufmerksamkeit geweckt\", \"innovativ\", \"bemerkenswert\", \"herausragend\"\n- Wenn die Website keinen brauchbaren Inhalt hat, schreibe: \"Ich habe mir Ihre Website angeschaut und würde gerne kurz über digitale Tourenplanung bei Ihnen sprechen.\""
+            }
+          ]
+        },
+        "simplify": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "ear-openai-04",
+      "name": "KI-Personalisierung",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [416, 0],
+      "credentials": {
+        "openAiApi": {
+          "id": "jqGWw4nEEYOe3nQv",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "apiToken",
+        "resource": "person",
+        "operation": "create",
+        "name": "={{ $('Leads lesen').item.json.Vorname }} {{ $('Leads lesen').item.json.Nachname }}",
+        "additionalFields": {
+          "email": [
+            "={{ $('Leads lesen').item.json.Kontakt_Email }}"
+          ]
+        }
+      },
+      "id": "ear-pipedrive-05",
+      "name": "Pipedrive Person",
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [656, 144],
+      "credentials": {
+        "pipedriveApi": {
+          "id": "pcXssw3uF1hL9iKF",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "addToCampaign",
+        "campaign": {
+          "__rl": true,
+          "value": "EAR_CAMPAIGN_ID",
+          "mode": "list",
+          "cachedResultName": "EAR Mahlzeitendienste Outreach"
+        },
+        "email": "={{ $('Leads lesen').item.json.Kontakt_Email }}",
+        "firstName": "={{ $('Leads lesen').item.json.Vorname }}",
+        "lastName": "={{ $('Leads lesen').item.json.Nachname }}",
+        "personalization": "={{ $('KI-Personalisierung').item.json.output[0].content[0].text }}",
+        "customFields": {
+          "customFieldValues": {
+            "field": [
+              {
+                "key": "anrede",
+                "value": "={{ $('Leads lesen').item.json.Anrede }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "ear-instantly-06",
+      "name": "Instantly Lead",
+      "type": "n8n-nodes-instantly.instantly",
+      "typeVersion": 1,
+      "position": [864, 144],
+      "credentials": {
+        "instantlyApi": {
+          "id": "b82mtdlkWu9xM20Z",
+          "name": "Instantly account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "EAR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "EAR Mahlzeitendienste Outreach",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/EAR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 0,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/EAR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Verarbeitet": "done"
+          },
+          "matchingColumns": ["Kontakt_Email"],
+          "schema": [
+            {
+              "id": "Kontakt_Email",
+              "displayName": "Kontakt_Email",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Verarbeitet",
+              "displayName": "Verarbeitet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ear-sheets-update-07",
+      "name": "Als erledigt markieren",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1080, 144],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "scFh2GbrfDnOQ3le",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Alle 12 Stunden": {
+      "main": [
+        [
+          {
+            "node": "Leads lesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leads lesen": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "KI-Personalisierung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KI-Personalisierung": {
+      "main": [
+        [
+          {
+            "node": "Pipedrive Person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipedrive Person": {
+      "main": [
+        [
+          {
+            "node": "Instantly Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instantly Lead": {
+      "main": [
+        [
+          {
+            "node": "Als erledigt markieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": []
+}
