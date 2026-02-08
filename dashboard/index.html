@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAR Outreach – KPI Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg-dark: #1e293b;
+            --bg-card: #ffffff;
+            --text-muted: #64748b;
+        }
+        body {
+            background: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .dashboard-header {
+            background: var(--bg-dark);
+            color: white;
+            padding: 1.5rem 0;
+        }
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        .dashboard-header .subtitle {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .kpi-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .kpi-target {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+        .kpi-target .badge {
+            font-size: 0.7rem;
+        }
+        .status-good { color: var(--success); }
+        .status-warn { color: var(--warning); }
+        .status-bad { color: var(--danger); }
+        .campaign-table {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .campaign-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+        .progress-thin {
+            height: 6px;
+            border-radius: 3px;
+        }
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+        }
+        .btn-save:hover {
+            background: #1d4ed8;
+            color: white;
+        }
+        .edit-input {
+            width: 80px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.25rem;
+            font-size: 0.9rem;
+        }
+        .edit-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+        }
+        .ab-winner { background: #f0fdf4; }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .last-updated {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>EAR Outreach Dashboard</h1>
+                <div class="subtitle">Essen auf Rädern – Kampagnen-Tracking</div>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="last-updated" id="lastUpdated"></span>
+                <button class="btn btn-save" onclick="saveData()">Speichern</button>
+                <button class="btn btn-outline-light btn-sm" onclick="exportCSV()">Export CSV</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <!-- Gesamt-KPIs -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2 col-6">
+            <div class="kpi-card">
+                <div class="kpi-value" id="totalLeads">0</div>
+                <div class="kpi-label">Leads gesamt</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card">
+                <div class="kpi-value" id="totalSent">0</div>
+                <div class="kpi-label">E-Mails gesendet</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card">
+                <div class="kpi-value" id="totalOpenRate">0%</div>
+                <div class="kpi-label">Open Rate</div>
+                <div class="kpi-target">Ziel: >50% <span class="badge" id="openBadge">-</span></div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card">
+                <div class="kpi-value" id="totalReplyRate">0%</div>
+                <div class="kpi-label">Reply Rate</div>
+                <div class="kpi-target">Ziel: >5% <span class="badge" id="replyBadge">-</span></div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card">
+                <div class="kpi-value" id="totalPositiveRate">0%</div>
+                <div class="kpi-label">Positive Replies</div>
+                <div class="kpi-target">Ziel: >2% <span class="badge" id="positiveBadge">-</span></div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="kpi-card">
+                <div class="kpi-value status-good" id="totalDemos">0</div>
+                <div class="kpi-label">Demo-Termine</div>
+                <div class="kpi-target">Ziel: 1-2% der Leads</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kampagnen-Detail -->
+    <div class="section-title">Kampagnen-Details</div>
+    <div class="campaign-table mb-4">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Kampagne</th>
+                    <th class="text-center">Leads</th>
+                    <th class="text-center">Gesendet</th>
+                    <th class="text-center">Opens</th>
+                    <th class="text-center">Open Rate</th>
+                    <th class="text-center">Replies</th>
+                    <th class="text-center">Reply Rate</th>
+                    <th class="text-center">Positiv</th>
+                    <th class="text-center">Demos</th>
+                    <th class="text-center">Bounces</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>A: Private Mahlzeitendienste</strong></td>
+                    <td class="text-center"><input class="edit-input" id="a_leads" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="a_sent" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="a_opens" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center" id="a_open_rate">0%</td>
+                    <td class="text-center"><input class="edit-input" id="a_replies" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center" id="a_reply_rate">0%</td>
+                    <td class="text-center"><input class="edit-input" id="a_positive" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="a_demos" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="a_bounces" type="number" value="0" onchange="recalculate()"></td>
+                </tr>
+                <tr>
+                    <td><strong>B: Wohlfahrtsverbände</strong></td>
+                    <td class="text-center"><input class="edit-input" id="b_leads" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="b_sent" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="b_opens" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center" id="b_open_rate">0%</td>
+                    <td class="text-center"><input class="edit-input" id="b_replies" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center" id="b_reply_rate">0%</td>
+                    <td class="text-center"><input class="edit-input" id="b_positive" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="b_demos" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="b_bounces" type="number" value="0" onchange="recalculate()"></td>
+                </tr>
+                <tr>
+                    <td><strong>C: Sozialstationen</strong></td>
+                    <td class="text-center"><input class="edit-input" id="c_leads" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="c_sent" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="c_opens" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center" id="c_open_rate">0%</td>
+                    <td class="text-center"><input class="edit-input" id="c_replies" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center" id="c_reply_rate">0%</td>
+                    <td class="text-center"><input class="edit-input" id="c_positive" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="c_demos" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="c_bounces" type="number" value="0" onchange="recalculate()"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- A/B Test Ergebnisse -->
+    <div class="section-title">A/B Test Ergebnisse</div>
+    <div class="campaign-table mb-4">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>E-Mail / Betreff</th>
+                    <th class="text-center">Variante</th>
+                    <th class="text-center">Gesendet</th>
+                    <th class="text-center">Open Rate</th>
+                    <th class="text-center">Reply Rate</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Mail 1: "Tourenplanung noch mit Excel?"</td>
+                    <td class="text-center">A (Problem)</td>
+                    <td class="text-center"><input class="edit-input" id="ab1a_sent" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="ab1a_open" type="text" value="0%" style="width:60px"></td>
+                    <td class="text-center"><input class="edit-input" id="ab1a_reply" type="text" value="0%" style="width:60px"></td>
+                    <td class="text-center" id="ab1a_status">-</td>
+                </tr>
+                <tr>
+                    <td>Mail 1: "Jede Mahlzeit pünktlich..."</td>
+                    <td class="text-center">B (Nutzen)</td>
+                    <td class="text-center"><input class="edit-input" id="ab1b_sent" type="number" value="0" onchange="recalculate()"></td>
+                    <td class="text-center"><input class="edit-input" id="ab1b_open" type="text" value="0%" style="width:60px"></td>
+                    <td class="text-center"><input class="edit-input" id="ab1b_reply" type="text" value="0%" style="width:60px"></td>
+                    <td class="text-center" id="ab1b_status">-</td>
+                </tr>
+                <tr class="table-light">
+                    <td colspan="6"><em>Weitere A/B-Tests nach Kampagnenstart hier eintragen</em></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Wochen-Tracking -->
+    <div class="section-title">Wochen-Tracking</div>
+    <div class="campaign-table mb-4">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Woche</th>
+                    <th class="text-center">Neue Leads</th>
+                    <th class="text-center">Gesendet</th>
+                    <th class="text-center">Opens</th>
+                    <th class="text-center">Replies</th>
+                    <th class="text-center">Demos</th>
+                    <th class="text-center">Notizen</th>
+                </tr>
+            </thead>
+            <tbody id="weeklyBody">
+                <tr>
+                    <td>Woche 1</td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td><input class="edit-input" type="text" value="" style="width:200px" placeholder="z.B. Warm-up Phase"></td>
+                </tr>
+                <tr>
+                    <td>Woche 2</td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td><input class="edit-input" type="text" value="" style="width:200px"></td>
+                </tr>
+                <tr>
+                    <td>Woche 3</td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td><input class="edit-input" type="text" value="" style="width:200px"></td>
+                </tr>
+                <tr>
+                    <td>Woche 4</td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+                    <td><input class="edit-input" type="text" value="" style="width:200px"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="p-2 text-end">
+            <button class="btn btn-sm btn-outline-secondary" onclick="addWeek()">+ Woche hinzufügen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Daten aus localStorage laden
+    function loadData() {
+        const saved = localStorage.getItem('ear-outreach-dashboard');
+        if (saved) {
+            const data = JSON.parse(saved);
+            Object.keys(data).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = data[id];
+            });
+            recalculate();
+        }
+        updateTimestamp();
+    }
+
+    // Daten in localStorage speichern
+    function saveData() {
+        const data = {};
+        document.querySelectorAll('.edit-input[id]').forEach(el => {
+            data[el.id] = el.value;
+        });
+        data._savedAt = new Date().toISOString();
+        localStorage.setItem('ear-outreach-dashboard', JSON.stringify(data));
+        updateTimestamp();
+        showToast('Gespeichert!');
+    }
+
+    function updateTimestamp() {
+        const saved = localStorage.getItem('ear-outreach-dashboard');
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (data._savedAt) {
+                const d = new Date(data._savedAt);
+                document.getElementById('lastUpdated').textContent =
+                    'Zuletzt gespeichert: ' + d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+            }
+        }
+    }
+
+    // KPIs neu berechnen
+    function recalculate() {
+        const campaigns = ['a', 'b', 'c'];
+        let totalLeads = 0, totalSent = 0, totalOpens = 0, totalReplies = 0, totalPositive = 0, totalDemos = 0;
+
+        campaigns.forEach(c => {
+            const leads = parseInt(document.getElementById(`${c}_leads`).value) || 0;
+            const sent = parseInt(document.getElementById(`${c}_sent`).value) || 0;
+            const opens = parseInt(document.getElementById(`${c}_opens`).value) || 0;
+            const replies = parseInt(document.getElementById(`${c}_replies`).value) || 0;
+            const positive = parseInt(document.getElementById(`${c}_positive`).value) || 0;
+            const demos = parseInt(document.getElementById(`${c}_demos`).value) || 0;
+
+            totalLeads += leads;
+            totalSent += sent;
+            totalOpens += opens;
+            totalReplies += replies;
+            totalPositive += positive;
+            totalDemos += demos;
+
+            // Kampagnen-Raten
+            document.getElementById(`${c}_open_rate`).textContent = sent > 0 ? ((opens / sent) * 100).toFixed(1) + '%' : '0%';
+            document.getElementById(`${c}_reply_rate`).textContent = sent > 0 ? ((replies / sent) * 100).toFixed(1) + '%' : '0%';
+
+            // Farbkodierung
+            const openRate = sent > 0 ? (opens / sent) * 100 : 0;
+            const replyRate = sent > 0 ? (replies / sent) * 100 : 0;
+            document.getElementById(`${c}_open_rate`).className = `text-center ${openRate >= 50 ? 'status-good' : openRate >= 30 ? 'status-warn' : 'status-bad'}`;
+            document.getElementById(`${c}_reply_rate`).className = `text-center ${replyRate >= 5 ? 'status-good' : replyRate >= 2 ? 'status-warn' : 'status-bad'}`;
+        });
+
+        // Gesamt-KPIs
+        document.getElementById('totalLeads').textContent = totalLeads.toLocaleString('de-DE');
+        document.getElementById('totalSent').textContent = totalSent.toLocaleString('de-DE');
+        document.getElementById('totalDemos').textContent = totalDemos;
+
+        const openRate = totalSent > 0 ? ((totalOpens / totalSent) * 100) : 0;
+        const replyRate = totalSent > 0 ? ((totalReplies / totalSent) * 100) : 0;
+        const positiveRate = totalSent > 0 ? ((totalPositive / totalSent) * 100) : 0;
+
+        document.getElementById('totalOpenRate').textContent = openRate.toFixed(1) + '%';
+        document.getElementById('totalReplyRate').textContent = replyRate.toFixed(1) + '%';
+        document.getElementById('totalPositiveRate').textContent = positiveRate.toFixed(1) + '%';
+
+        // KPI Status Badges
+        setBadge('openBadge', openRate, 50, 30);
+        setBadge('replyBadge', replyRate, 5, 2);
+        setBadge('positiveBadge', positiveRate, 2, 1);
+
+        // KPI Farben
+        document.getElementById('totalOpenRate').className = `kpi-value ${openRate >= 50 ? 'status-good' : openRate >= 30 ? 'status-warn' : ''}`;
+        document.getElementById('totalReplyRate').className = `kpi-value ${replyRate >= 5 ? 'status-good' : replyRate >= 2 ? 'status-warn' : ''}`;
+        document.getElementById('totalPositiveRate').className = `kpi-value ${positiveRate >= 2 ? 'status-good' : positiveRate >= 1 ? 'status-warn' : ''}`;
+    }
+
+    function setBadge(id, value, good, warn) {
+        const el = document.getElementById(id);
+        if (value >= good) {
+            el.textContent = 'Ziel erreicht';
+            el.className = 'badge bg-success';
+        } else if (value >= warn) {
+            el.textContent = 'Nah dran';
+            el.className = 'badge bg-warning text-dark';
+        } else if (value > 0) {
+            el.textContent = 'Unter Ziel';
+            el.className = 'badge bg-danger';
+        } else {
+            el.textContent = '-';
+            el.className = 'badge bg-secondary';
+        }
+    }
+
+    // Woche hinzufügen
+    let weekCount = 4;
+    function addWeek() {
+        weekCount++;
+        const tbody = document.getElementById('weeklyBody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>Woche ${weekCount}</td>
+            <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+            <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+            <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+            <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+            <td class="text-center"><input class="edit-input" type="number" value="0"></td>
+            <td><input class="edit-input" type="text" value="" style="width:200px"></td>
+        `;
+        tbody.appendChild(row);
+    }
+
+    // CSV Export
+    function exportCSV() {
+        const campaigns = ['a', 'b', 'c'];
+        const names = {'a': 'Private Mahlzeitendienste', 'b': 'Wohlfahrtsverbände', 'c': 'Sozialstationen'};
+        let csv = 'Kampagne,Leads,Gesendet,Opens,Open Rate,Replies,Reply Rate,Positive,Demos,Bounces\n';
+
+        campaigns.forEach(c => {
+            const sent = parseInt(document.getElementById(`${c}_sent`).value) || 0;
+            const opens = parseInt(document.getElementById(`${c}_opens`).value) || 0;
+            const replies = parseInt(document.getElementById(`${c}_replies`).value) || 0;
+            csv += `"${names[c]}",`;
+            csv += `${document.getElementById(`${c}_leads`).value},`;
+            csv += `${sent},`;
+            csv += `${opens},`;
+            csv += `${sent > 0 ? ((opens/sent)*100).toFixed(1) : 0}%,`;
+            csv += `${replies},`;
+            csv += `${sent > 0 ? ((replies/sent)*100).toFixed(1) : 0}%,`;
+            csv += `${document.getElementById(`${c}_positive`).value},`;
+            csv += `${document.getElementById(`${c}_demos`).value},`;
+            csv += `${document.getElementById(`${c}_bounces`).value}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `ear-outreach-report-${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    }
+
+    // Toast
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 m-3 px-4 py-2 bg-dark text-white rounded-3';
+        toast.style.zIndex = 9999;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    // Auto-save bei Eingabe
+    document.addEventListener('change', () => saveData());
+
+    // Init
+    loadData();
+</script>
+
+</body>
+</html>
